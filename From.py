@@ -82,7 +82,7 @@ class QtMainWindow(QMainWindow):
         self.connect_init()
 
         self.show()
-        sys.exit(app.exec())
+        sys.exit(app.exec_())
     # 信号连接初始化
     def connect_init(self):
         # 连接信号 表格发生选中变化时候
