@@ -67,4 +67,4 @@ class Disease:
             f.write(json.dumps(data_dict, indent=4))
         print('转换完成！')
 
-Disease.excel_to_nested_dict('./res/病害数据.xlsx')
+# Disease.excel_to_nested_dict('./res/病害数据.xlsx')
