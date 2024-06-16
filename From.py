@@ -24,13 +24,17 @@ class QtMainWindow(QMainWindow):
 
         # 创建表格
         self.table_info = QTableView()
+        self.table_info.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
         self.table_quantity = QTableView()
+
         self.table_disease = QTableView()
+        self.table_disease.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
         # 创建表格模型
         self.table_info_model = QStandardItemModel()
-        # 计算模型
+        # 其他模型
         self.table_quantity_model = QStandardItemModel()
         self.table_disease_model = QStandardItemModel()
+
         # 过滤显示模型
         self.show_table_quantity_model = QStandardItemModel()
         self.show_table_disease_model = QStandardItemModel()
@@ -252,8 +256,7 @@ class QtMainWindow(QMainWindow):
                 print("保存成功")
             except Exception as e:
                 print("保存文件出错:", e)
-            except Exception as e:
-                print("保存文件出错:", e)
+
 
     # 将QStandardItemModel转换为Pandas DataFrame
     def model_to_pd_dataframe(self, model):
