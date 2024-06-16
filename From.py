@@ -4,7 +4,7 @@ from PySide6.QtCore import QSortFilterProxyModel
 from PySide6.QtGui import QGuiApplication, QStandardItemModel, QStandardItem, Qt
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, \
     QTableWidgetItem, QFileDialog, QTableView, QToolBar, QDialog, QSizePolicy
-
+from edit_dise import LinkedComboBoxDelegate
 
 class QtMainWindow(QMainWindow):
     def __init__(self):
@@ -40,8 +40,14 @@ class QtMainWindow(QMainWindow):
         self.table_disease.setModel(self.show_table_disease_model)
         self.table_quantity.setModel(self.show_table_quantity_model)
 
-        # self.table_quantity.setModel(self.table_quantity_model)
-        # self.table_disease.setModel(self.table_disease_model)
+        # 设置委托
+        delegate = LinkedComboBoxDelegate()
+        # 委托有1-7
+        for col_1 in range(1, 7):
+            self.table_disease.setItemDelegateForColumn(col_1, delegate)
+
+
+
 
         self.toolBar = QToolBar('工具栏')
         self.Toolbar_init()
@@ -182,6 +188,7 @@ class QtMainWindow(QMainWindow):
 
     def show_disease(self):
         self.table_disease_QDialog.move(self.x(), self.y()+200)
+
         self.table_disease_QDialog.show()
 
     # 打开文件
