@@ -1,6 +1,6 @@
 import sys
 import pandas as pd
-from PySide6.QtCore import QSortFilterProxyModel,QItemSelection
+from PySide6.QtCore import QSortFilterProxyModel,QItemSelection,QRegularExpression
 from PySide6.QtGui import QGuiApplication, QStandardItemModel, QStandardItem, Qt
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, \
     QTableWidgetItem, QFileDialog, QTableView, QToolBar, QDialog, QSizePolicy,QHeaderView
@@ -35,7 +35,7 @@ class QtMainWindow(QMainWindow):
         # 设置选择行为 单行选中
         self.table_disease.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
         # 设置自动缩放表头
-        # self.table_disease.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.table_disease.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         # 设置排序
         self.table_disease.setSortingEnabled(True)
         # 创建表格模型
@@ -45,8 +45,19 @@ class QtMainWindow(QMainWindow):
         self.table_disease_model = QStandardItemModel()
 
         # 过滤显示模型
-        self.show_table_quantity_model = QStandardItemModel()
-        self.show_table_disease_model = QStandardItemModel()
+        # self.show_table_quantity_model = QStandardItemModel()
+        # self.show_table_disease_model = QStandardItemModel()
+        #-----------------------------
+        # 设置显示代理类 用来过滤显示
+        self.show_table_disease_model = FullMatchFilterProxyModel()
+        self.show_table_disease_model.setSourceModel(self.table_disease_model)
+
+        self.show_table_quantity_model = FullMatchFilterProxyModel()
+        self.show_table_quantity_model.setSourceModel(self.table_quantity_model)
+
+        self.table_disease.setModel(self.show_table_disease_model)
+        self.table_quantity.setModel(self.show_table_quantity_model)
+        # -----------------------------
 
         # 将表格模型设置为表格的模型
         self.table_info.setModel(self.table_info_model)
@@ -76,12 +87,14 @@ class QtMainWindow(QMainWindow):
         layout_table.addWidget(self.table_quantity)
         self.table_quantity_QDialog.setLayout(layout_table)
 
+
         # 创建病害表对话框
         # self.table_disease.setFixedHeight(self.height())
-        self.table_disease.setFixedWidth(self.width() - 20)
+        # self.table_disease.setFixedWidth(self.width() - 20)
 
         self.table_disease_QDialog = QDialog(self)
         self.table_disease_QDialog.setWindowTitle("病害表")
+        self.table_disease_QDialog.setMinimumWidth(self.width() - 20)
 
         layout_table_d = QVBoxLayout()
         toolBar_d = QToolBar('工具栏')
@@ -119,36 +132,38 @@ class QtMainWindow(QMainWindow):
 
         print('info _table 选择发生变化', selected_id)
 
-        self.show_table_quantity_model = self.create_filter_model(self.table_quantity_model, selected_id)
-        self.show_table_disease_model = self.create_filter_model(self.table_disease_model, selected_id)
-        self.table_quantity.setModel(self.show_table_quantity_model)
+        self.show_table_disease_model.setFilterRegularExpression(selected_id)
+        self.show_table_quantity_model.setFilterRegularExpression(selected_id)
+        # self.show_table_quantity_model = self.create_filter_model(self.table_quantity_model, selected_id)
+        # self.show_table_disease_model = self.create_filter_model(self.table_disease_model, selected_id)
+        # self.table_quantity.setModel(self.show_table_quantity_model)
+        #
+        # self.table_disease.setModel(self.show_table_disease_model)
+        # self.show_table_disease_model.invalidateFilter()
+        # self.show_table_quantity_model.invalidateFilter()
 
-        self.table_disease.setModel(self.show_table_disease_model)
-        self.show_table_disease_model.invalidateFilter()
-        self.show_table_quantity_model.invalidateFilter()
-
-    def create_filter_model(self, source_model, filter_id):
-        """
-        根据给定的模型和桥梁ID创建并返回一个新的过滤模型。
-
-        参数:
-        source_model -- 原始的QStandardItemModel对象
-        filter_id -- 用于过滤的桥梁ID
-
-        返回:
-        QSortFilterProxyModel -- 过滤后的代理模型
-        """
-        proxy_model = QSortFilterProxyModel()
-        proxy_model.setSourceModel(source_model)
-
-        # 自定义过滤逻辑
-        def filter_accepts_row(row_source, parent):
-            index = source_model.index(row_source, 0, parent)  # 假设ID在第0列
-            id_value = source_model.data(index, Qt.ItemDataRole.DisplayRole)
-            return id_value == str(filter_id)  # 比较ID值
-
-        proxy_model.filterAcceptsRow = filter_accepts_row  # 覆盖默认的过滤接受行方法
-        return proxy_model
+    # def create_filter_model(self, source_model, filter_id):
+    #     """
+    #     根据给定的模型和桥梁ID创建并返回一个新的过滤模型。
+    #
+    #     参数:
+    #     source_model -- 原始的QStandardItemModel对象
+    #     filter_id -- 用于过滤的桥梁ID
+    #
+    #     返回:
+    #     QSortFilterProxyModel -- 过滤后的代理模型
+    #     """
+    #     proxy_model = QSortFilterProxyModel()
+    #     proxy_model.setSourceModel(source_model)
+    #
+    #     # 自定义过滤逻辑
+    #     def filter_accepts_row(row_source, parent):
+    #         index = source_model.index(row_source, 0, parent)  # 假设ID在第0列
+    #         id_value = source_model.data(index, Qt.ItemDataRole.DisplayRole)
+    #         return id_value == str(filter_id)  # 比较ID值
+    #
+    #     proxy_model.filterAcceptsRow = filter_accepts_row  # 覆盖默认的过滤接受行方法
+    #     return proxy_model
 
     def add_disease(self):
         # 获取当前选中行的ID
@@ -349,6 +364,28 @@ class QtMainWindow(QMainWindow):
                 rows.append(row)
         for row_del in reversed(rows):
             model.removeRow(row_del)
+
+# 重新实现过滤逻辑
+
+class FullMatchFilterProxyModel(QSortFilterProxyModel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def filterAcceptsRow(self, source_row, source_parent):
+        # 直接获取过滤器的文本，不再使用正则表达式
+        filter_text = self.filterRegularExpression().pattern()
+
+        # 只检查第一列
+        index = self.sourceModel().index(source_row, 0, source_parent)
+        data = self.sourceModel().data(index).strip()  # 去除前后空格以更精确地比较
+
+        # print(index, '=====', data)
+
+        # 简单的字符串匹配，忽略大小写
+        if filter_text.lower() == data.lower():
+            return True
+        else:
+            return False
 
 
 if __name__ == "__main__":
