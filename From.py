@@ -3,7 +3,8 @@ import pandas as pd
 from PySide6.QtCore import QSortFilterProxyModel,QItemSelection
 from PySide6.QtGui import QGuiApplication, QStandardItemModel, QStandardItem, Qt
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, \
-    QTableWidgetItem, QFileDialog, QTableView, QToolBar, QDialog, QSizePolicy
+    QTableWidgetItem, QFileDialog, QTableView, QToolBar, QDialog, QSizePolicy,QHeaderView
+
 from edit_dise import LinkedComboBoxDelegate
 
 
@@ -24,11 +25,19 @@ class QtMainWindow(QMainWindow):
 
         # 创建表格
         self.table_info = QTableView()
+        # 设置选择行为 单行选中
         self.table_info.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
+        self.table_info.setSortingEnabled(True)
         self.table_quantity = QTableView()
 
+
         self.table_disease = QTableView()
+        # 设置选择行为 单行选中
         self.table_disease.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
+        # 设置自动缩放表头
+        # self.table_disease.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        # 设置排序
+        self.table_disease.setSortingEnabled(True)
         # 创建表格模型
         self.table_info_model = QStandardItemModel()
         # 其他模型
